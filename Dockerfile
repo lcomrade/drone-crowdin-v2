@@ -1,20 +1,15 @@
 # BUILD
-FROM golang:1.18.8-alpine as build
+FROM docker.io/library/golang:1.21.5 as build
 
 WORKDIR /build
 
-RUN apk update && apk upgrade && apk add --no-cache make git
-
 COPY . ./
-
-RUN make
+RUN CGO_ENABLED=0 go build -trimpath -ldflags="-w -s" -o ./drone-crowdin-v2 ./cmd/drone-crowdin-v2/*.go
 
 
 # RUN
-FROM alpine as run
+FROM scratch
 
-WORKDIR /
+COPY --from=build /build/drone-crowdin-v2 /
 
-COPY --from=build /build/dist/* /usr/local/bin/
-
-CMD [ "/usr/local/bin/drone-crowdin-v2" ]
+CMD [ "/drone-crowdin-v2" ]

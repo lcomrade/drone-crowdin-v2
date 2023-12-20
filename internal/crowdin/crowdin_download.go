@@ -1,4 +1,4 @@
-// Copyright (C) 2022 Leonid Maslakov.
+// Copyright (C) 2022-2023 Leonid Maslakov.
 
 // This file is part of drone-crowdin-v2.
 
@@ -16,7 +16,7 @@
 // You should have received a copy of the GNU Affero Public License along with drone-crowdin-v2.
 // If not, see <https://www.gnu.org/licenses/>.
 
-package crowdinapi
+package crowdin
 
 import (
 	"encoding/json"

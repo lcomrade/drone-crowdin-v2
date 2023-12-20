@@ -1,4 +1,4 @@
-// Copyright (C) 2022 Leonid Maslakov.
+// Copyright (C) 2022-2023 Leonid Maslakov.
 
 // This file is part of drone-crowdin-v2.
 
@@ -21,13 +21,19 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"git.lcomrade.su/root/drone-crowdin-v2/internal/crowdinapi"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/lcomrade/drone-crowdin-v2/internal/crowdin"
 )
 
-var Version string
+const (
+	author          = "Leonid Maslakov <root@lcomrade.su>"
+	downloadSources = "https://github.com/lcomrade/drone-crowdin-v2"
+
+	version = "20231220"
+)
 
 func exitOnError(a ...interface{}) {
 	fmt.Fprint(os.Stderr, "error: ")
@@ -49,7 +55,7 @@ func getBoolVal(envName string) bool {
 	return val
 }
 
-func targetUpload(crowdin *crowdinapi.Client, projectID string) {
+func targetUpload(client *crowdin.Client, projectID string) {
 	// Get files list from parameters
 	filesList := os.Getenv("PLUGIN_UPLOAD_FILES")
 
@@ -67,7 +73,7 @@ func targetUpload(crowdin *crowdinapi.Client, projectID string) {
 		exitOnError("upload files list cannot be empty")
 	}
 
-	cloudBadSymbols := string(crowdinapi.BadSymbols)
+	cloudBadSymbols := string(crowdin.BadSymbols)
 	for localPath, cloudName := range targetFiles {
 		if localPath == "" {
 			exitOnError("local file path cannot be empty")
@@ -85,7 +91,7 @@ func targetUpload(crowdin *crowdinapi.Client, projectID string) {
 	// Add or update files
 	for localPath, cloudName := range targetFiles {
 		// Check file exist in Crowdin
-		fileID, err := crowdin.FindFileId(projectID, cloudName)
+		fileID, err := client.FindFileId(projectID, cloudName)
 		if err != nil {
 			exitOnError(err)
 		}
@@ -93,7 +99,7 @@ func targetUpload(crowdin *crowdinapi.Client, projectID string) {
 		// Add if not exist
 		if fileID == "" {
 			fmt.Println("- Add:   ", localPath, "->", cloudName)
-			err = crowdin.AddFile(projectID, localPath, cloudName)
+			err = client.AddFile(projectID, localPath, cloudName)
 			if err != nil {
 				exitOnError(err)
 			}
@@ -101,7 +107,7 @@ func targetUpload(crowdin *crowdinapi.Client, projectID string) {
 			// Else update file
 		} else {
 			fmt.Println("- Update:", localPath, "->", cloudName)
-			err = crowdin.UpdateFile(projectID, localPath, cloudName, fileID)
+			err = client.UpdateFile(projectID, localPath, cloudName, fileID)
 			if err != nil {
 				exitOnError(err)
 			}
@@ -109,7 +115,7 @@ func targetUpload(crowdin *crowdinapi.Client, projectID string) {
 	}
 }
 
-func targetDownload(crowdin *crowdinapi.Client, projectID string) {
+func targetDownload(client *crowdin.Client, projectID string) {
 	// Get download parameters
 	downloadTo := os.Getenv("PLUGIN_DOWNLOAD_TO")
 	if downloadTo == "" {
@@ -121,7 +127,7 @@ func targetDownload(crowdin *crowdinapi.Client, projectID string) {
 	exportApprovedOnly := getBoolVal("PLUGIN_DOWNLOAD_EXPORT_APPROVED_ONLY")
 
 	// Download
-	extracted, err := crowdin.Download(downloadTo, projectID, skipUntranslatedStrings, skipUntranslatedFiles, exportApprovedOnly)
+	extracted, err := client.Download(downloadTo, projectID, skipUntranslatedStrings, skipUntranslatedFiles, exportApprovedOnly)
 	if err != nil {
 		exitOnError(err)
 	}
@@ -131,16 +137,10 @@ func targetDownload(crowdin *crowdinapi.Client, projectID string) {
 	}
 }
 
-func init() {
-	if Version == "" {
-		Version = "0.0.0.0"
-	}
-}
-
 func main() {
-	fmt.Println("Drone plugin author: Leonid Maslakov <root@lcomrade.su>")
-	fmt.Println("Drone plugin source code: https://git.lcomrade.su/root/drone-crowdin-v2")
-	fmt.Println("Drone plugin version:", Version)
+	fmt.Println("Drone plugin author:", author)
+	fmt.Println("Drone plugin source code:", downloadSources)
+	fmt.Println("Drone plugin version:", version)
 
 	var err error
 	tipProjectID := false
@@ -160,7 +160,7 @@ func main() {
 	}
 
 	// Prepare Crowdin API client
-	crowdin := crowdinapi.NewClient(key)
+	crowdin := crowdin.NewClient(key)
 
 	// Get project ID if need
 	if projectID == "" {

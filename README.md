@@ -21,7 +21,7 @@ trigger:
 steps:
   - name: upload
     pull: always
-    image: git.lcomrade.su/root/drone-crowdin-v2
+    image: github.com/lcomrade/drone-crowdin-v2
     settings:
       crowdin_key:
         from_secret: crowdin_key
@@ -56,7 +56,7 @@ trigger:
 steps:
   - name: download
     pull: always
-    image: git.lcomrade.su/root/drone-crowdin-v2
+    image: github.com/lcomrade/drone-crowdin-v2
     settings:
       crowdin_key:
         from_secret: crowdin_key

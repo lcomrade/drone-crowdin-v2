@@ -1,5 +1,5 @@
-module git.lcomrade.su/root/drone-crowdin-v2
+module github.com/lcomrade/drone-crowdin-v2
 
 go 1.16
 
-replace git.lcomrade.su/root/drone-crowdin-v2 => ./
+replace github.com/lcomrade/drone-crowdin-v2 => ./
