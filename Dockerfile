@@ -1,5 +1,5 @@
 # BUILD
-FROM docker.io/library/golang:1.21.5 as build
+FROM golang:1-alpine as build
 
 WORKDIR /build
 
