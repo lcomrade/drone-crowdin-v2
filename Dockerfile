@@ -12,5 +12,6 @@ FROM scratch
 
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=build /build/drone-crowdin-v2 /
+COPY --from=build /tmp /tmp
 
 CMD [ "/drone-crowdin-v2" ]
